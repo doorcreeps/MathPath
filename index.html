@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Десятичные дроби · возврат на уровень</title>
+    <title>Десятичные дроби · запятая = точка</title>
     <style>
         * {
             box-sizing: border-box;
@@ -326,7 +326,7 @@
             <div class="expression" id="expression">0.5 + 0.7</div>
             <div class="input-area">
                 <div class="answer-box">
-                    <input type="number" step="any" id="answerInput" placeholder="ответ" inputmode="decimal" value="">
+                    <input type="text" id="answerInput" placeholder="ответ" inputmode="decimal" value="">
                     <button id="checkBtn">=</button>
                 </div>
                 <div class="feedback" id="feedback">👆 введи ответ</div>
@@ -335,7 +335,7 @@
                 </div>
             </div>
         </div>
-        <div class="small-note">⚡ ошибка → новый пример · уровень не сбрасывается</div>
+        <div class="small-note">⚡ запятая = точка · ошибка → новый пример</div>
     </div>
 
     <script>
@@ -372,6 +372,14 @@
             const opSub = document.getElementById('opSub');
             const opMul = document.getElementById('opMul');
             const opDiv = document.getElementById('opDiv');
+
+            // Функция замены запятой на точку и парсинг числа
+            function parseWithComma(str) {
+                if (!str) return NaN;
+                // Заменяем запятую на точку
+                const normalized = str.replace(/,/g, '.');
+                return parseFloat(normalized);
+            }
 
             // Обновление активного класса у кнопок операций
             function updateOpsUI() {
@@ -560,7 +568,10 @@
                     feedbackDiv.innerHTML = '⛔ введите число';
                     return;
                 }
-                const userAnswer = parseFloat(inputVal);
+                
+                // Используем нашу функцию с заменой запятой
+                const userAnswer = parseWithComma(inputVal);
+                
                 if (isNaN(userAnswer)) {
                     feedbackDiv.className = 'feedback wrong';
                     feedbackDiv.innerHTML = '❓ это не число';
