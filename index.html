@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Десятичные дроби · возврат на уровень</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: linear-gradient(145deg, #1e3c5c 0%, #0f2b40 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            touch-action: manipulation;
+        }
+        .game-container {
+            max-width: 480px;
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 36px;
+            padding: 20px 16px;
+            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.6);
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 60px;
+            padding: 8px 14px;
+        }
+        .level-badge {
+            background: #fbbf24;
+            color: #0f172a;
+            font-weight: 800;
+            font-size: 1.5rem;
+            padding: 6px 22px;
+            border-radius: 40px;
+            letter-spacing: 1px;
+            box-shadow: 0 0 0 3px #fde68a;
+            min-width: 110px;
+            text-align: center;
+        }
+        .difficulty-switch {
+            display: flex;
+            gap: 5px;
+            background: #1e2b3c;
+            padding: 4px;
+            border-radius: 40px;
+            border: 1px solid #4a5f7a;
+        }
+        .difficulty-switch button {
+            border: none;
+            background: transparent;
+            font-size: 1.0rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #a0b8d0;
+            touch-action: manipulation;
+        }
+        .difficulty-switch button.active {
+            background: #facc15;
+            color: #0f172a;
+            box-shadow: 0 2px 8px #fbbf24;
+        }
+        .reset-btn {
+            background: none;
+            border: 2px solid #f87171;
+            color: #fed7d7;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            touch-action: manipulation;
+        }
+        .reset-btn:active {
+            background: #f87171;
+            color: black;
+        }
+        .progress-area {
+            background: #2d4055;
+            border-radius: 30px;
+            height: 14px;
+            margin: 24px 0 20px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 6px #00000055;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #fbbf24);
+            transition: width 0.3s ease;
+            border-radius: 30px;
+        }
+        .card {
+            background: #f8fafc;
+            border-radius: 40px;
+            padding: 24px 16px 28px;
+            box-shadow: 0 15px 25px -6px black;
+            border: 2px solid #facc15;
+        }
+        
+        /* Панель выбора операций */
+        .operations-panel {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: #e9eef3;
+            padding: 12px 10px;
+            border-radius: 60px;
+        }
+        .op-btn {
+            border: none;
+            background: #cbd5e1;
+            font-size: 1.6rem;
+            font-weight: 700;
+            width: 65px;
+            height: 65px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.15s;
+            color: #1e293b;
+            box-shadow: 0 3px 0 #94a3b8;
+            touch-action: manipulation;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .op-btn.active {
+            background: #facc15;
+            box-shadow: 0 3px 0 #b45309;
+            transform: translateY(-2px);
+        }
+        .op-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #94a3b8;
+        }
+
+        .task-type {
+            background: #2563eb;
+            color: white;
+            padding: 5px 16px;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        .expression {
+            font-size: 2.8rem;
+            font-weight: 800;
+            text-align: center;
+            letter-spacing: 2px;
+            color: #0f172a;
+            background: #f1f5f9;
+            padding: 25px 10px;
+            border-radius: 36px;
+            margin-bottom: 24px;
+            border: 3px dashed #cbd5e1;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+        .answer-box {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+        }
+        .answer-box input {
+            font-size: 2.2rem;
+            padding: 16px 20px;
+            width: 200px;
+            text-align: center;
+            border: 4px solid #cbd5e1;
+            border-radius: 60px;
+            background: white;
+            font-weight: 600;
+            color: #1e293b;
+            outline: none;
+            transition: 0.2s;
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+        }
+        .answer-box input:focus {
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 4px #fde68a;
+        }
+        .answer-box button {
+            background: #1e293b;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            padding: 0 36px;
+            border-radius: 60px;
+            cursor: pointer;
+            border: 3px solid #facc15;
+            transition: 0.15s;
+            letter-spacing: 1px;
+            touch-action: manipulation;
+            min-width: 100px;
+        }
+        .answer-box button:active {
+            background: #facc15;
+            color: #0f172a;
+        }
+        .feedback {
+            min-height: 65px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 15px;
+            border-radius: 60px;
+            background: #e2e8f0;
+            width: 100%;
+            text-align: center;
+            word-break: break-word;
+        }
+        .feedback.correct {
+            background: #86efac;
+            color: #14532d;
+        }
+        .feedback.wrong {
+            background: #fecaca;
+            color: #7f1d1d;
+        }
+        .next-lvl {
+            margin-top: 18px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+        .next-lvl button {
+            background: #4b5563;
+            border: none;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            padding: 16px 20px;
+            border-radius: 60px;
+            cursor: pointer;
+            border: 2px solid #9ca3af;
+            transition: 0.2s;
+            width: 100%;
+            touch-action: manipulation;
+        }
+        .next-lvl button:enabled {
+            background: #15803d;
+            border-color: #facc15;
+            color: white;
+        }
+        .next-lvl button:enabled:active {
+            background: #16a34a;
+            transform: scale(0.98);
+        }
+        .small-note {
+            color: #9fb0cc;
+            text-align: center;
+            margin-top: 14px;
+            font-size: 1.0rem;
+        }
+        @media (max-width: 400px) {
+            .expression { font-size: 2.2rem; }
+            .answer-box input { width: 160px; font-size: 1.8rem; }
+            .answer-box button { padding: 0 24px; font-size: 1.8rem; }
+            .level-badge { font-size: 1.2rem; padding: 4px 14px; }
+            .difficulty-switch button { padding: 6px 10px; font-size: 0.9rem; }
+            .op-btn { width: 55px; height: 55px; font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container" id="gameContainer">
+        <div class="header">
+            <div class="level-badge" id="levelDisplay">УР 1</div>
+            <div class="difficulty-switch">
+                <button id="diffNormal" class="active">НОРМ</button>
+                <button id="diffHard">СЛОЖНО</button>
+            </div>
+            <button class="reset-btn" id="resetProgress">⟲ СБРОС</button>
+        </div>
+        <div class="progress-area">
+            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+        </div>
+
+        <div class="card">
+            <!-- Панель выбора операций -->
+            <div class="operations-panel">
+                <button class="op-btn" id="opAdd">+</button>
+                <button class="op-btn" id="opSub">−</button>
+                <button class="op-btn" id="opMul">×</button>
+                <button class="op-btn" id="opDiv">÷</button>
+            </div>
+
+            <div class="task-type" id="taskTypeLabel">➕ сложение</div>
+            <div class="expression" id="expression">0.5 + 0.7</div>
+            <div class="input-area">
+                <div class="answer-box">
+                    <input type="number" step="any" id="answerInput" placeholder="ответ" inputmode="decimal" value="">
+                    <button id="checkBtn">=</button>
+                </div>
+                <div class="feedback" id="feedback">👆 введи ответ</div>
+                <div class="next-lvl">
+                    <button id="nextLevelBtn" disabled>➡️ следующий</button>
+                </div>
+            </div>
+        </div>
+        <div class="small-note">⚡ ошибка → новый пример · уровень не сбрасывается</div>
+    </div>
+
+    <script>
+        (function() {
+            const MAX_LEVEL = 50;
+            let currentLevel = 1;
+            let difficulty = 'normal';
+            let currentTask = { text: '0.5 + 0.7', answer: 1.2, type: 'сложение' };
+            let lastAnswerCorrect = false;
+
+            // Состояние выбранных операций (по умолчанию все активны)
+            let selectedOps = {
+                addition: true,
+                subtraction: true,
+                multiplication: true,
+                division: true
+            };
+
+            // Элементы
+            const progressFill = document.getElementById('progressFill');
+            const levelDisplay = document.getElementById('levelDisplay');
+            const expressionDiv = document.getElementById('expression');
+            const taskTypeLabel = document.getElementById('taskTypeLabel');
+            const feedbackDiv = document.getElementById('feedback');
+            const answerInput = document.getElementById('answerInput');
+            const checkBtn = document.getElementById('checkBtn');
+            const nextBtn = document.getElementById('nextLevelBtn');
+            const diffNormal = document.getElementById('diffNormal');
+            const diffHard = document.getElementById('diffHard');
+            const resetBtn = document.getElementById('resetProgress');
+
+            // Кнопки операций
+            const opAdd = document.getElementById('opAdd');
+            const opSub = document.getElementById('opSub');
+            const opMul = document.getElementById('opMul');
+            const opDiv = document.getElementById('opDiv');
+
+            // Обновление активного класса у кнопок операций
+            function updateOpsUI() {
+                opAdd.classList.toggle('active', selectedOps.addition);
+                opSub.classList.toggle('active', selectedOps.subtraction);
+                opMul.classList.toggle('active', selectedOps.multiplication);
+                opDiv.classList.toggle('active', selectedOps.division);
+            }
+
+            // Обработчики для кнопок операций
+            opAdd.addEventListener('click', () => {
+                selectedOps.addition = !selectedOps.addition;
+                // Если все операции выключены, включаем сложение принудительно
+                if (!selectedOps.addition && !selectedOps.subtraction && !selectedOps.multiplication && !selectedOps.division) {
+                    selectedOps.addition = true;
+                }
+                updateOpsUI();
+                refreshTask(); // обновить задачу с новым фильтром
+            });
+
+            opSub.addEventListener('click', () => {
+                selectedOps.subtraction = !selectedOps.subtraction;
+                if (!selectedOps.addition && !selectedOps.subtraction && !selectedOps.multiplication && !selectedOps.division) {
+                    selectedOps.subtraction = true;
+                }
+                updateOpsUI();
+                refreshTask();
+            });
+
+            opMul.addEventListener('click', () => {
+                selectedOps.multiplication = !selectedOps.multiplication;
+                if (!selectedOps.addition && !selectedOps.subtraction && !selectedOps.multiplication && !selectedOps.division) {
+                    selectedOps.multiplication = true;
+                }
+                updateOpsUI();
+                refreshTask();
+            });
+
+            opDiv.addEventListener('click', () => {
+                selectedOps.division = !selectedOps.division;
+                if (!selectedOps.addition && !selectedOps.subtraction && !selectedOps.multiplication && !selectedOps.division) {
+                    selectedOps.division = true;
+                }
+                updateOpsUI();
+                refreshTask();
+            });
+
+            // Генератор с учётом только выбранных операций
+            function generateTask(level, diff) {
+                // Собираем доступные типы операций
+                const availableTypes = [];
+                if (selectedOps.addition) availableTypes.push('сложение');
+                if (selectedOps.subtraction) availableTypes.push('вычитание');
+                if (selectedOps.multiplication) availableTypes.push('умножение');
+                if (selectedOps.division) availableTypes.push('деление');
+
+                // Если почему-то ничего не выбрано (защита), ставим сложение
+                if (availableTypes.length === 0) {
+                    availableTypes.push('сложение');
+                    selectedOps.addition = true;
+                    updateOpsUI();
+                }
+
+                // Случайный выбор типа из доступных
+                const type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+
+                const maxDec = (diff === 'hard') ? 3 : 2;
+                const scale = Math.pow(10, maxDec);
+
+                let a, b, answer;
+                let attempts = 0;
+                const maxAttempts = 30;
+
+                const generatePositive = () => {
+                    if (type === 'сложение') {
+                        if (diff === 'hard') {
+                            a = Math.random() * 25 + 0.1;
+                            b = Math.random() * 25 + 0.1;
+                        } else {
+                            a = Math.random() * 18 + 0.2;
+                            b = Math.random() * 18 + 0.2;
+                        }
+                        a = Math.round(a * scale) / scale;
+                        b = Math.round(b * scale) / scale;
+                        answer = a + b;
+                    }
+                    else if (type === 'вычитание') {
+                        if (diff === 'hard') {
+                            a = Math.random() * 28 + 0.3;
+                            b = Math.random() * (a - 0.1) + 0.1;
+                        } else {
+                            a = Math.random() * 20 + 0.5;
+                            b = Math.random() * (a - 0.2) + 0.2;
+                        }
+                        a = Math.round(a * scale) / scale;
+                        b = Math.round(b * scale) / scale;
+                        if (a < b) { let t = a; a = b; b = t; }
+                        answer = a - b;
+                    }
+                    else if (type === 'умножение') {
+                        if (diff === 'hard') {
+                            a = Math.random() * 12 + 0.2;
+                            b = Math.random() * 12 + 0.2;
+                        } else {
+                            a = Math.random() * 10 + 0.3;
+                            b = Math.random() * 10 + 0.3;
+                        }
+                        a = Math.round(a * 100) / 100;
+                        b = Math.round(b * 100) / 100;
+                        answer = a * b;
+                        answer = Math.round(answer * 10000) / 10000;
+                    }
+                    else { // деление
+                        if (diff === 'hard') {
+                            b = Math.random() * 8 + 0.2;
+                            a = b * (Math.floor(Math.random() * 12) + 1);
+                        } else {
+                            b = Math.random() * 6 + 0.5;
+                            a = b * (Math.floor(Math.random() * 8) + 1);
+                        }
+                        a = a + (Math.random() * 0.4 - 0.2);
+                        b = b + (Math.random() * 0.3 - 0.15);
+                        a = Math.max(0.2, Math.round(a * 100) / 100);
+                        b = Math.max(0.2, Math.round(b * 100) / 100);
+                        if (b === 0) b = 0.5;
+                        answer = a / b;
+                        answer = Math.round(answer * 10000) / 10000;
+                    }
+
+                    a = parseFloat(a.toFixed(maxDec + 1));
+                    b = parseFloat(b.toFixed(maxDec + 1));
+                };
+
+                do {
+                    generatePositive();
+                    attempts++;
+                } while ((answer <= 0.0001 || !isFinite(answer) || isNaN(answer) || answer > 5000) && attempts < maxAttempts);
+
+                if (answer <= 0) answer = Math.abs(answer) + 0.5;
+
+                const formatNum = (n) => {
+                    return parseFloat(n.toFixed(5)).toString();
+                };
+
+                const sign = type === 'сложение' ? '+' : type === 'вычитание' ? '−' : type === 'умножение' ? '×' : '÷';
+                const text = `${formatNum(a)} ${sign} ${formatNum(b)}`;
+                return { text, answer, type };
+            }
+
+            function refreshTask() {
+                currentTask = generateTask(currentLevel, difficulty);
+                expressionDiv.innerText = currentTask.text;
+                taskTypeLabel.innerText = 
+                    currentTask.type === 'сложение' ? '➕ сложение' :
+                    currentTask.type === 'вычитание' ? '➖ вычитание' :
+                    currentTask.type === 'умножение' ? '✖️ умножение' : '➗ деление';
+                answerInput.value = '';
+                feedbackDiv.className = 'feedback';
+                feedbackDiv.innerHTML = '👆 введи ответ';
+                lastAnswerCorrect = false;
+                nextBtn.disabled = true;
+                answerInput.disabled = false;
+                checkBtn.disabled = false;
+
+                if (currentLevel > MAX_LEVEL) {
+                    expressionDiv.innerText = '🏆 ВСЕ УРОВНИ!';
+                    taskTypeLabel.innerText = '🎉 завершено';
+                    answerInput.disabled = true;
+                    checkBtn.disabled = true;
+                    feedbackDiv.innerHTML = '🔥 ты молодец!';
+                }
+            }
+
+            function updateProgress() {
+                levelDisplay.innerText = `УР ${currentLevel}`;
+                const percent = ((currentLevel - 1) / MAX_LEVEL) * 100;
+                progressFill.style.width = percent + '%';
+            }
+
+            function handleCheck() {
+                if (currentLevel > MAX_LEVEL) return;
+
+                const inputVal = answerInput.value.trim();
+                if (inputVal === '') {
+                    feedbackDiv.className = 'feedback wrong';
+                    feedbackDiv.innerHTML = '⛔ введите число';
+                    return;
+                }
+                const userAnswer = parseFloat(inputVal);
+                if (isNaN(userAnswer)) {
+                    feedbackDiv.className = 'feedback wrong';
+                    feedbackDiv.innerHTML = '❓ это не число';
+                    return;
+                }
+
+                const correct = currentTask.answer;
+                const epsilon = 0.0005;
+                const isCorrect = Math.abs(userAnswer - correct) < epsilon;
+
+                if (isCorrect) {
+                    feedbackDiv.className = 'feedback correct';
+                    feedbackDiv.innerHTML = `✅ ВЕРНО! (${correct})`;
+                    lastAnswerCorrect = true;
+                    nextBtn.disabled = false;
+                } else {
+                    feedbackDiv.className = 'feedback wrong';
+                    feedbackDiv.innerHTML = `❌ Ошибка! Новый пример на этом же уровне`;
+                    lastAnswerCorrect = false;
+                    nextBtn.disabled = true;
+                    
+                    // Просто генерируем новый пример на том же уровне (не сбрасываем уровень)
+                    refreshTask();
+                }
+            }
+
+            function goToNextLevel() {
+                if (!lastAnswerCorrect && currentLevel <= MAX_LEVEL) return;
+                if (currentLevel < MAX_LEVEL) {
+                    currentLevel++;
+                    updateProgress();
+                    refreshTask();
+                } else if (currentLevel === MAX_LEVEL) {
+                    currentLevel = MAX_LEVEL + 1;
+                    levelDisplay.innerText = '🏁 ФИНИШ';
+                    progressFill.style.width = '100%';
+                    expressionDiv.innerText = '🥇 ТЫ СДЕЛАЛ ЭТО!';
+                    taskTypeLabel.innerText = '🏆 50/50';
+                    answerInput.disabled = true;
+                    checkBtn.disabled = true;
+                    feedbackDiv.innerHTML = '✨ супер результат';
+                    nextBtn.disabled = true;
+                }
+            }
+
+            function resetGame() {
+                currentLevel = 1;
+                lastAnswerCorrect = false;
+                difficulty = 'normal';
+                diffNormal.classList.add('active');
+                diffHard.classList.remove('active');
+                // Сброс выбора операций на все
+                selectedOps = {
+                    addition: true,
+                    subtraction: true,
+                    multiplication: true,
+                    division: true
+                };
+                updateOpsUI();
+                updateProgress();
+                refreshTask();
+                answerInput.disabled = false;
+                checkBtn.disabled = false;
+            }
+
+            function setDifficulty(newDiff) {
+                if (newDiff === difficulty) return;
+                difficulty = newDiff;
+                if (difficulty === 'normal') {
+                    diffNormal.classList.add('active');
+                    diffHard.classList.remove('active');
+                } else {
+                    diffHard.classList.add('active');
+                    diffNormal.classList.remove('active');
+                }
+                if (currentLevel <= MAX_LEVEL) {
+                    refreshTask();
+                } else {
+                    resetGame();
+                }
+            }
+
+            // События
+            checkBtn.addEventListener('click', handleCheck);
+            answerInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleCheck();
+                }
+            });
+            nextBtn.addEventListener('click', goToNextLevel);
+            diffNormal.addEventListener('click', () => setDifficulty('normal'));
+            diffHard.addEventListener('click', () => setDifficulty('hard'));
+            resetBtn.addEventListener('click', resetGame);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !nextBtn.disabled && currentLevel <= MAX_LEVEL) {
+                    e.preventDefault();
+                    goToNextLevel();
+                }
+            });
+
+            // Старт
+            updateOpsUI();
+            updateProgress();
+            refreshTask();
+
+            answerInput.addEventListener('focus', () => {
+                answerInput.select();
+            });
+        })();
+    </script>
+</body>
+</html>
